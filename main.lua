@@ -102,33 +102,6 @@ function main()
     mainMenu()
 end
 
---[[
---
--- This empty space will hold other functions and methods to run the
--- application
--- ]]--
-
-
---[[Display objects and global Runtime objects can be event listeners. ]]--
-
-
-local function listener(event)
-    if event.target.name == 'playbutton' then
-        print ('The button was touched')
-    end
-end
-
---[[an image display object registers to receive a touch event.]]--
---playBtn:addEventListener("touch", listener)
-
-local function listener2(event)
-    --print ("The button appeared")
-end
-
---[[Runtime events are sent by the system. They broadcast to all listeners]]--
-Runtime:addEventListener("enterFrame", listener2)
-
-
 function mainMenu()
     menuScreenGroup = display.newGroup()
     mmScreen = display.newImage("assets/img/mmScreen.png", 0, 0, true)
@@ -197,11 +170,10 @@ function addGameScreen()
 end
 
 function dragPaddle(event)
-    if isSimulator then
         if event.phase == 'began' then
             moveX = event.x - paddle.x
         elseif event.phase == "moved" then
-            paddle.x = event.x - move.x
+            paddle.x = event.x - moveX
         end
 
         if ( (paddle.x - paddle.width * 0.5) < 0) then
@@ -209,11 +181,10 @@ function dragPaddle(event)
         elseif ((paddle.x + paddle.width * 0.5) > display.contentWidth) then
             paddle.x = display.contentWidth - paddle.width * 0.5
         end
-    end
 end
 
 function movePaddle(event)
-    paddle.x = display.contentCenterX - (display.contentCenterX * (event..yGravity*3))
+    paddle.x = display.contentCenterX - (display.contentCenterX * (event.yGravity*3))
     if ( (paddle.x - paddle.width * 0.5) < 0) then
         paddle.x = paddle.width * 0.5
     elseif ((paddle.x + paddle.width  * 0.5) > display.contentWidth) then
@@ -234,6 +205,8 @@ function startGame()
     physics.addBody(paddle, "static", {density=1,friction=0,bounce=0})
     physics.addBody(ball, "dynamic", {density=1,friction=0,bounce=0})
     background:removeEventListener("tap", startGame)
+
+    gameListeners("add")
 end
 
 
@@ -278,6 +251,23 @@ function gameLevel2()
     end
 end
 
+function gameListeners(event)
+    if event == 'add' then
+        Runtime:addEventListener("accelerometer", movePaddle)
+        Runtime:addEventListener("enterFrame", updateBall)
+        paddle:addEventListener("collision", bounce)
+        ball:addEventListener("collision", removeBrick)
+        paddle:addEventListener("touch", dragPaddle)
+    elseif event == 'remove' then
+        Runtime:removeEventListener("accelerometer", movePadle)
+        Runtime:removeEventListener("enterFrame", updateBall)
+        paddle:removeEventListener("collision", bounce)
+        ball:removeEventListener("collision", removeBrick)
+        paddle:removeEventListener("touch", dragPaddle)
+    end
+end
+
+
 function removeBrick(event)
     if event.other.name == 'brick' and ball.x + ball.width * 0.5 < event.other.x + event.other.width * 0.5 then
         vx = -vx
@@ -305,8 +295,54 @@ end
 function updateBall()
     ball.x = ball.x + vx
     ball.y = ball.y + vy
+
+    if ball.x < 0 or ball.x + ball.width > display.contentWidth then
+        vx = -vx
+    end
+
+    if ball.y < 0 then
+        vy = -vy
+    end
+
+    if ball.y + ball.height > paddle.y + paddle.height then
+        alertScreen("You lose!", "Play again")
+        gameEvent = "lose"
+    end
 end
 
+function changeLevel1()
+    bricks:removeSelf()
+    bricks.numChildren = 0
+    bricks = display.newGroup()
+
+    alertBox:removeEventListener("tap", restart)
+    alertDisplayGroup:removeSelf()
+    alertDisplayGroup = nil
+
+    ball.x = (display.contentWidth * 0.5) - (ball.width * 0.5)
+    ball.y = (paddle.y - paddle.height) - (ball.height * 0.5) - 2
+    paddle.x = display.contentWidth * 0.5
+
+    gameLevel1()
+    background:addEventListener("tap", startGame)
+end
+
+function changeLevel2()
+    bricks:removeSelf()
+    bricks.numChildren = 0
+    bricks = display.newGroup()
+
+    alertBox:removeEventListener("tap", restart)
+    alertDisplayGroup:removeSelf()
+    alertDisplayGroup = nil
+
+    ball.x = (display.contentWidth * 0.5) - (ball.width * 0.5)
+    ball.y = (paddle.y - paddle.height) - (ball.height * 0.5) - 2
+    paddle.x = display.contentWidth * 0.5
+
+    gameLevel2()
+    background:addEventListener("tap", startGame)
+end
 
 function alertScreen(title, message)
     alertBox = display.newImage("assets/img/alertBox.png")
@@ -334,6 +370,33 @@ function alertScreen(title, message)
     alertDisplayGroup:insert(alertBox)
     alertDisplayGroup:insert(conditionDisplay)
     alertDisplayGroup:insert(messageText)
+
+    alertBox:addEventListener("tap", restart)
+
+    gameListeners("remove")
 end
+
+function restart()
+    if gameEvent == 'win' and currentLevel == 1 then
+        currentLevel = currentLevel + 1
+        changeLevel2()
+        -- tostring converts any argument to a string
+        levelNum.text = tostring(currentLevel)
+    elseif gameEvent == 'win' and currentLevel == 2 then
+        alertScreen("  Game Over", "  Congratulations!")
+        gameEvent = "completed"
+    elseif gameEvent == 'lose'and currentLevel == 1 then
+        score = 0
+        scoreNum.text = "0"
+        changeLevel1()
+    elseif gameEvent == 'lose' and currentLevel == 2 then
+        score = 0
+        scoreNum.text = "0"
+        changeLevel2()
+    elseif gameEvent == "completed" then
+        alertBox:removeEventListener("tap", restart)
+    end
+end
+
 
 main()
