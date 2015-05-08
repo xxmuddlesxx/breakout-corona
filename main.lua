@@ -284,7 +284,8 @@ function removeBrick(event)
         bricks.numChildren = bricks.numChildren - 1
         score = score + 1
         scoreNum.text = score * scoreIncrease
-        scoreNum:setReferencePoint(display.CenterLeftReferencePoint)
+        scoreNum.anchorX = _W*.3
+		scoreNum.anchorY = _H*.3
         scoreNum.x = 54
     end
 
@@ -356,7 +357,8 @@ function alertScreen(title, message)
     conditionDisplay:setTextColor(255,255,255,255)
     conditionDisplay.xScale = 0.5
     conditionDisplay.yScale = 0.5
-    conditionDisplay:setReferencePoint(display.CenterReferencePoint)
+    conditionDisplay.anchorX = _W
+    conditionDisplay.anchorY = _H
     conditionDisplay.x = display.contentCenterX
     conditionDisplay.y = display.contentCenterY - 15
 
@@ -364,7 +366,8 @@ function alertScreen(title, message)
     messageText:setTextColor(255,255,255,255)
     messageText.xScale = 0.5
     messageText.yScale = 0.5
-    messageText:setReferencePoint(display.CenterReferencePoint)
+    messageText.anchorX = _W
+    messageText.anchorY = _H
     messageText.x = display.contentCenterX
     messageText.y = display.contentCenterY + 15
 
