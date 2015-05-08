@@ -109,7 +109,9 @@ function mainMenu()
     mmScreen.y = _H
 
     playBtn = display.newImage("assets/img/playbtn.png")
-    playBtn:setReferencePoint(display.CenterReferencePoint)
+    playBtn.anchorX = _W
+    playBtn.anchorY = _H
+    playBtn.setDefault("Anchor Y", 0)
     playBtn.x = _W; playBtn.y = _H + 50
     playBtn.name = "playbutton"
 
