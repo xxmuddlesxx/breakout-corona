@@ -16,4 +16,6 @@ some good thinking about here as far as stages go, a bonus stage could go pretty
 
 Boss Mode
 
-Mix BreakOut with Pong, thinking about giving some persistent networking coding a go.
+Mix BreakOut with Pong, 
+
+thinking about giving some persistent networking coding a go too if time permits for a multiplayer mode.
